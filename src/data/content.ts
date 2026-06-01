@@ -14,8 +14,8 @@
 import type { IconName } from "@/components/ui/icons";
 
 /** Canonical production URL — used by metadata, sitemap, robots, JSON-LD.
- *  PLACEHOLDER: replace with the real domain before launch. */
-export const siteUrl = "https://arpar-longevity.example.com";
+ *  Live Netlify deployment (update if a custom domain is added later). */
+export const siteUrl = "https://arpar-longevity-center.netlify.app";
 
 export const site = {
   name: "ARPAR",
