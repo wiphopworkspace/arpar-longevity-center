@@ -1,0 +1,16 @@
+# Netlify configuration for ARPAR Longevity Center (Next.js 14 App Router)
+# The Next.js Runtime turns SSG pages into static assets and the
+# /api/contact route handler into a serverless function automatically.
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  # Pin a stable LTS Node version for reproducible builds.
+  NODE_VERSION = "20"
+
+# Official Netlify Next.js Runtime. Netlify auto-detects Next.js and
+# installs this even without the block, but declaring it is explicit & safe.
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

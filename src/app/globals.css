@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   ARPAR Longevity Center — Design tokens
+   Soft luxury medical-wellness palette (white / cream / gold)
+   ============================================================ */
+:root {
+  --cream-0: #ffffff;
+  --cream-1: #faf8f2;
+  --cream-2: #f6f1e8;
+
+  --ink: #4a4035;
+  --ink-soft: #7a6d5d;
+
+  --gold: #b89542;
+  --gold-light: #c9a646;
+  --gold-soft: #e8d7a8;
+
+  --line: #e6ddcc;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-cream-100 text-ink font-sans antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Premium, readable headings */
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-heading text-ink;
+    letter-spacing: -0.01em;
+  }
+
+  ::selection {
+    background-color: var(--gold-soft);
+    color: var(--ink);
+  }
+
+  /* Respect reduced-motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* Centered max-width content rail */
+  .container-rail {
+    @apply mx-auto w-full max-w-container px-5 sm:px-8 lg:px-10;
+  }
+
+  /* Small uppercase gold eyebrow label */
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-gold;
+  }
+
+  /* Thin gold divider */
+  .gold-divider {
+    @apply h-px w-full bg-gradient-to-r from-transparent via-line to-transparent;
+  }
+
+  /* Gold gradient text */
+  .text-gold-gradient {
+    @apply bg-gold-gradient bg-clip-text text-transparent;
+  }
+
+  /* Frosted card surface */
+  .card-surface {
+    @apply rounded-2xl border border-line/80 bg-white/70 shadow-soft backdrop-blur-sm;
+  }
+}
+
+@layer utilities {
+  /* Reveal-on-scroll helper (paired with IntersectionObserver in Reveal.tsx) */
+  .reveal {
+    opacity: 0;
+    transform: translateY(26px);
+    transition:
+      opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}
