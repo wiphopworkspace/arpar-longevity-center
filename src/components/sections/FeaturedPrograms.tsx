@@ -4,41 +4,43 @@ import { Placeholder } from "@/components/ui/Placeholder";
 import { BrochureImage } from "@/components/ui/BrochureImage";
 import { Button } from "@/components/ui/Button";
 import { SparkleGlyph } from "@/components/ui/icons";
-import { programs, servicesOverview } from "@/data/content";
+import { localePath, type Dictionary, type Locale } from "@/data/content";
 
 const tones = ["gold", "warm", "cool"] as const;
 
-export function FeaturedPrograms() {
+export function FeaturedPrograms({
+  dict,
+  locale,
+}: {
+  dict: Dictionary;
+  locale: Locale;
+}) {
+  const section = dict.programsSection;
   return (
     <section id="programs" className="scroll-mt-24 py-20 lg:py-28">
       <div className="container-rail">
         <SectionHeading
-          eyebrow="Featured Programs"
-          title="Signature programs, designed around you"
-          titleTh="โปรแกรมเด่น ออกแบบเฉพาะบุคคล"
-          description="Three of our most requested programs — each guided end-to-end by our medical team."
+          eyebrow={section.eyebrow}
+          title={section.title}
+          description={section.description}
         />
 
-        {/* Full services-overview brochure as a supporting visual */}
         <Reveal className="mx-auto mt-12 max-w-4xl">
           <BrochureImage
-            image={servicesOverview}
+            image={dict.programsBanner}
             sizes="(max-width: 896px) 100vw, 896px"
           />
         </Reveal>
 
         <div className="mt-16 flex flex-col gap-16 lg:gap-24">
-          {programs.map((program, i) => {
+          {dict.programs.map((program, i) => {
             const reversed = i % 2 === 1;
             return (
               <div
-                key={program.title}
+                key={program.slug ?? program.title}
                 className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16"
               >
-                {/* Image */}
-                <Reveal
-                  className={`relative ${reversed ? "lg:order-last" : ""}`}
-                >
+                <Reveal className={`relative ${reversed ? "lg:order-last" : ""}`}>
                   <Placeholder
                     label={program.title}
                     tone={tones[i % tones.length]}
@@ -49,14 +51,10 @@ export function FeaturedPrograms() {
                   </span>
                 </Reveal>
 
-                {/* Copy */}
                 <Reveal delay={80}>
                   <h3 className="text-balance text-2xl font-semibold leading-snug sm:text-3xl">
                     {program.title}
                   </h3>
-                  <p className="mt-2 font-thai text-lg font-medium text-ink-soft">
-                    {program.titleTh}
-                  </p>
                   <p className="mt-4 text-base leading-relaxed text-ink-soft">
                     {program.description}
                   </p>
@@ -74,12 +72,15 @@ export function FeaturedPrograms() {
 
                   <div className="mt-9 flex flex-wrap gap-3">
                     {program.slug && (
-                      <Button href={`/services/${program.slug}`} variant="outline">
-                        ดูรายละเอียด
+                      <Button
+                        href={localePath(locale, `/services/${program.slug}`)}
+                        variant="outline"
+                      >
+                        {dict.ui.learnMore}
                       </Button>
                     )}
-                    <Button href="/#contact" variant="ghost">
-                      ปรึกษาเกี่ยวกับโปรแกรมนี้
+                    <Button href={localePath(locale, "/#contact")} variant="ghost">
+                      {dict.ui.consultAboutProgram}
                     </Button>
                   </div>
                 </Reveal>

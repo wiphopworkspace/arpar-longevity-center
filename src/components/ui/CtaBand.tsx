@@ -1,15 +1,17 @@
 import { Reveal } from "./Reveal";
 import { Button } from "./Button";
 import { SparkleGlyph, ArrowRight } from "./icons";
-import { cta } from "@/data/content";
+import { localePath, type Dictionary, type Locale } from "@/data/content";
 
 type Props = {
+  dict: Dictionary;
+  locale: Locale;
   title: string;
   subtitle?: string;
 };
 
 /** Gold gradient closing call-to-action band (shared across pages). */
-export function CtaBand({ title, subtitle }: Props) {
+export function CtaBand({ dict, locale, title, subtitle }: Props) {
   return (
     <section className="container-rail py-12 lg:py-16">
       <Reveal>
@@ -37,12 +39,12 @@ export function CtaBand({ title, subtitle }: Props) {
           )}
           <div className="mt-8 flex justify-center">
             <Button
-              href={cta.href}
+              href={localePath(locale, dict.cta.href)}
               size="lg"
               variant="outline"
               className="border-white/70 bg-white/10 text-white hover:bg-white/20 hover:border-white"
             >
-              {cta.label}
+              {dict.cta.label}
               <ArrowRight width={18} height={18} />
             </Button>
           </div>

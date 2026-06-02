@@ -11,62 +11,80 @@ import { BrochureImage } from "@/components/ui/BrochureImage";
 import { ServiceCard } from "@/components/services/ServiceCard";
 import { Icon, SparkleGlyph, ArrowRight } from "@/components/ui/icons";
 import {
+  siteUrl,
+  isLocale,
+  getDictionary,
   getServiceBySlug,
   getRelatedServices,
   serviceSlugs,
+  localePath,
+  type Locale,
 } from "@/data/content";
 
-type Params = { slug: string };
+type Params = { locale: string; slug: string };
 
-/** Pre-render every service detail page at build time (static generation). */
-export function generateStaticParams(): Params[] {
+/** Pre-render every service detail page (slug × locale handled by Next). */
+export function generateStaticParams(): { slug: string }[] {
   return serviceSlugs.map((slug) => ({ slug }));
 }
 
 export function generateMetadata({ params }: { params: Params }): Metadata {
-  const service = getServiceBySlug(params.slug);
+  if (!isLocale(params.locale)) return { title: "Not found" };
+  const locale = params.locale as Locale;
+  const dict = getDictionary(locale);
+  const service = getServiceBySlug(dict, params.slug);
   if (!service) return { title: "Service not found" };
 
   return {
     title: service.title,
     description: service.description,
-    alternates: { canonical: `/services/${service.slug}` },
+    alternates: {
+      canonical: `${siteUrl}/${locale}/services/${service.slug}`,
+      languages: {
+        th: `${siteUrl}/th/services/${service.slug}`,
+        en: `${siteUrl}/en/services/${service.slug}`,
+        "x-default": `${siteUrl}/th/services/${service.slug}`,
+      },
+    },
     openGraph: {
       title: `${service.title} | ARPAR Longevity Center`,
       description: service.description,
-      url: `/services/${service.slug}`,
+      url: `${siteUrl}/${locale}/services/${service.slug}`,
     },
   };
 }
 
 export default function ServiceDetailPage({ params }: { params: Params }) {
-  const service = getServiceBySlug(params.slug);
+  if (!isLocale(params.locale)) notFound();
+  const locale = params.locale as Locale;
+  const dict = getDictionary(locale);
+  const service = getServiceBySlug(dict, params.slug);
   if (!service) notFound();
 
-  const related = getRelatedServices(service.slug, 3);
+  const related = getRelatedServices(dict, service.slug, 3);
+  const { ui } = dict;
 
   return (
     <>
-      <Header />
+      <Header dict={dict} locale={locale} />
       <main>
         <PageHero
-          eyebrow="Service"
+          eyebrow={ui.serviceLabel}
           title={service.title}
-          titleTh={service.titleTh}
           description={service.description}
           breadcrumbs={[
-            { label: "Home", href: "/" },
-            { label: "Services", href: "/services" },
-            { label: service.title, href: `/services/${service.slug}` },
+            { label: ui.home, href: localePath(locale, "/") },
+            { label: ui.services, href: localePath(locale, "/services") },
+            { label: service.title, href: localePath(locale, `/services/${service.slug}`) },
           ]}
         >
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Button href="/#contact" size="lg">
-              ปรึกษาผู้เชี่ยวชาญ
+            <Button href={localePath(locale, "/#contact")} size="lg">
+              {ui.consult}
               <ArrowRight width={18} height={18} />
             </Button>
-            <Button href="/services" variant="outline" size="lg">
-              ดูบริการทั้งหมด
+            <Button href={localePath(locale, "/services")} variant="outline" size="lg">
+              {ui.viewAll}
             </Button>
           </div>
         </PageHero>
@@ -76,10 +94,10 @@ export default function ServiceDetailPage({ params }: { params: Params }) {
           <Reveal className="mx-auto max-w-3xl text-center">
             <span className="eyebrow">
               <SparkleGlyph width={14} height={14} className="text-gold" />
-              Overview
+              {ui.overview}
             </span>
             <h2 className="mt-4 text-balance text-2xl font-semibold leading-snug sm:text-3xl">
-              A personalized, wellness-focused approach
+              {ui.overviewHeading}
             </h2>
             <p className="mt-5 text-base leading-relaxed text-ink-soft">
               {service.overview}
@@ -104,19 +122,13 @@ export default function ServiceDetailPage({ params }: { params: Params }) {
                   <Icon name="user" width={24} height={24} />
                 </span>
                 <h2 className="mt-5 font-heading text-xl font-semibold text-ink">
-                  Who it&rsquo;s for
+                  {ui.whoFor}
                 </h2>
                 <ul className="mt-5 space-y-3.5">
                   {service.whoFor.map((item) => (
                     <li key={item} className="flex items-start gap-3">
-                      <SparkleGlyph
-                        width={15}
-                        height={15}
-                        className="mt-1 shrink-0 text-gold"
-                      />
-                      <span className="text-sm leading-relaxed text-ink">
-                        {item}
-                      </span>
+                      <SparkleGlyph width={15} height={15} className="mt-1 shrink-0 text-gold" />
+                      <span className="text-sm leading-relaxed text-ink">{item}</span>
                     </li>
                   ))}
                 </ul>
@@ -129,7 +141,7 @@ export default function ServiceDetailPage({ params }: { params: Params }) {
                   <Icon name="calendar" width={24} height={24} />
                 </span>
                 <h2 className="mt-5 font-heading text-xl font-semibold text-ink">
-                  What to expect
+                  {ui.whatToExpect}
                 </h2>
                 <ol className="mt-5 space-y-4">
                   {service.whatToExpect.map((step, i) => (
@@ -137,9 +149,7 @@ export default function ServiceDetailPage({ params }: { params: Params }) {
                       <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gold-gradient text-xs font-semibold text-white">
                         {i + 1}
                       </span>
-                      <span className="pt-0.5 text-sm leading-relaxed text-ink">
-                        {step}
-                      </span>
+                      <span className="pt-0.5 text-sm leading-relaxed text-ink">{step}</span>
                     </li>
                   ))}
                 </ol>
@@ -153,10 +163,10 @@ export default function ServiceDetailPage({ params }: { params: Params }) {
           <Reveal>
             <span className="eyebrow">
               <SparkleGlyph width={14} height={14} className="text-gold" />
-              Key Benefits
+              {ui.keyBenefits}
             </span>
             <h2 className="mt-4 text-balance text-2xl font-semibold sm:text-3xl">
-              What this service is designed to support
+              {ui.benefitsHeading}
             </h2>
           </Reveal>
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -166,9 +176,7 @@ export default function ServiceDetailPage({ params }: { params: Params }) {
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold-soft/50 text-gold">
                     <SparkleGlyph width={16} height={16} />
                   </span>
-                  <p className="pt-1 text-sm font-medium leading-relaxed text-ink">
-                    {benefit}
-                  </p>
+                  <p className="pt-1 text-sm font-medium leading-relaxed text-ink">{benefit}</p>
                 </div>
               </Reveal>
             ))}
@@ -184,14 +192,10 @@ export default function ServiceDetailPage({ params }: { params: Params }) {
               </span>
               <div>
                 <h3 className="font-heading text-base font-semibold text-ink">
-                  A consultation is recommended
+                  {ui.consultNoticeTitle}
                 </h3>
                 <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">
-                  ARPAR services are wellness-focused and provided under medical
-                  supervision. Suitability, approach, and expected outcomes are
-                  determined on an individual basis during your consultation.
-                  This information is for general guidance and is not a
-                  substitute for professional medical advice.
+                  {ui.consultNoticeBody}
                 </p>
               </div>
             </div>
@@ -205,36 +209,43 @@ export default function ServiceDetailPage({ params }: { params: Params }) {
               <Reveal>
                 <span className="eyebrow">
                   <SparkleGlyph width={14} height={14} className="text-gold" />
-                  Related Services
+                  {ui.relatedServices}
                 </span>
-                <h2 className="mt-4 text-2xl font-semibold sm:text-3xl">
-                  You might also explore
-                </h2>
+                <h2 className="mt-4 text-2xl font-semibold sm:text-3xl">{ui.youMightExplore}</h2>
               </Reveal>
               <Reveal>
                 <Link
-                  href="/services"
+                  href={localePath(locale, "/services")}
                   className="hidden items-center gap-1.5 text-sm font-semibold text-gold transition-all hover:gap-2.5 sm:inline-flex"
                 >
-                  ดูบริการทั้งหมด
+                  {ui.viewAll}
                   <ArrowRight width={16} height={16} />
                 </Link>
               </Reveal>
             </div>
             <div className="mt-10 grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
               {related.map((s, i) => (
-                <ServiceCard key={s.slug} service={s} delay={(i % 3) * 80} compact />
+                <ServiceCard
+                  key={s.slug}
+                  service={s}
+                  dict={dict}
+                  locale={locale}
+                  delay={(i % 3) * 80}
+                  compact
+                />
               ))}
             </div>
           </section>
         )}
 
         <CtaBand
-          title="เริ่มต้นวางแผนสุขภาพของคุณกับ ARPAR"
-          subtitle="ปรึกษาผู้เชี่ยวชาญของเราเพื่อออกแบบโปรแกรมสุขภาพเฉพาะคุณ"
+          dict={dict}
+          locale={locale}
+          title={dict.ctaBand.title}
+          subtitle={dict.ctaBand.subtitle}
         />
       </main>
-      <Footer />
+      <Footer dict={dict} locale={locale} />
     </>
   );
 }

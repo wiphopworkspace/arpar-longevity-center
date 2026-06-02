@@ -1,13 +1,13 @@
 import { Reveal } from "@/components/ui/Reveal";
 import { BrochureImage } from "@/components/ui/BrochureImage";
 import { SparkleGlyph } from "@/components/ui/icons";
-import { about } from "@/data/content";
+import { type Dictionary } from "@/data/content";
 
-export function About() {
+export function About({ dict }: { dict: Dictionary }) {
+  const about = dict.about;
   return (
     <section id="about" className="scroll-mt-24 py-20 lg:py-28">
       <div className="container-rail">
-        {/* Concise live intro (kept short — the brochure below carries detail) */}
         <div className="mx-auto max-w-3xl text-center">
           <Reveal>
             <span className="eyebrow">
@@ -20,19 +20,13 @@ export function About() {
               {about.title}
             </h2>
           </Reveal>
-          <Reveal delay={110}>
-            <p className="mt-3 font-thai text-lg font-medium text-ink-soft">
-              {about.titleTh}
-            </p>
-          </Reveal>
-          <Reveal delay={160}>
+          <Reveal delay={120}>
             <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-ink-soft">
               {about.lead}
             </p>
           </Reveal>
 
-          {/* Short, scannable category tags (not a copy of the brochure text) */}
-          <Reveal delay={220}>
+          <Reveal delay={180}>
             <ul className="mt-7 flex flex-wrap justify-center gap-2.5">
               {about.points.map((point) => (
                 <li
@@ -47,7 +41,6 @@ export function About() {
           </Reveal>
         </div>
 
-        {/* Full-width poster brochure — uncropped, readable on all widths */}
         <Reveal delay={120} className="mx-auto mt-12 max-w-4xl lg:mt-14">
           <BrochureImage
             image={about.image}

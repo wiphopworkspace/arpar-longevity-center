@@ -2,39 +2,21 @@ import { Button } from "@/components/ui/Button";
 import { Reveal } from "@/components/ui/Reveal";
 import { Placeholder } from "@/components/ui/Placeholder";
 import { SparkleGlyph, ArrowRight } from "@/components/ui/icons";
-import { hero } from "@/data/content";
+import { localePath, type Dictionary, type Locale } from "@/data/content";
 
-export function Hero() {
+export function Hero({ dict, locale }: { dict: Dictionary; locale: Locale }) {
+  const hero = dict.hero;
   return (
     <section
       id="top"
       className="relative overflow-hidden bg-cream-radial pt-32 pb-20 sm:pt-36 lg:pt-40 lg:pb-28"
     >
-      {/* Decorative gold glow + sparkles */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-gold-soft/30 blur-3xl"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -left-32 top-40 h-96 w-96 rounded-full bg-gold-soft/20 blur-3xl"
-      />
-      <SparkleGlyph
-        aria-hidden="true"
-        className="absolute left-[8%] top-32 hidden text-gold/40 animate-shimmer lg:block"
-        width={26}
-        height={26}
-      />
-      <SparkleGlyph
-        aria-hidden="true"
-        className="absolute right-[12%] bottom-24 hidden text-gold/30 animate-shimmer lg:block"
-        width={18}
-        height={18}
-        style={{ animationDelay: "1.5s" }}
-      />
+      <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-gold-soft/30 blur-3xl" />
+      <div aria-hidden="true" className="pointer-events-none absolute -left-32 top-40 h-96 w-96 rounded-full bg-gold-soft/20 blur-3xl" />
+      <SparkleGlyph aria-hidden="true" className="absolute left-[8%] top-32 hidden text-gold/40 animate-shimmer lg:block" width={26} height={26} />
+      <SparkleGlyph aria-hidden="true" className="absolute right-[12%] bottom-24 hidden text-gold/30 animate-shimmer lg:block" width={18} height={18} style={{ animationDelay: "1.5s" }} />
 
       <div className="container-rail grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
-        {/* Copy */}
         <div className="flex flex-col items-start">
           <Reveal>
             <span className="eyebrow rounded-full border border-line bg-white/60 px-4 py-2 shadow-soft">
@@ -45,13 +27,13 @@ export function Hero() {
 
           <Reveal delay={80}>
             <h1 className="mt-6 text-balance text-4xl font-semibold leading-[1.08] sm:text-5xl lg:text-6xl">
-              {hero.title}
+              {hero.brand}
             </h1>
           </Reveal>
 
           <Reveal delay={140}>
             <p className="mt-5 font-thai text-xl font-medium text-ink-soft sm:text-2xl">
-              {hero.titleTh}
+              {hero.headline}
             </p>
           </Reveal>
 
@@ -63,11 +45,11 @@ export function Hero() {
 
           <Reveal delay={260}>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Button href={hero.primaryCta.href} size="lg">
+              <Button href={localePath(locale, hero.primaryCta.href)} size="lg">
                 {hero.primaryCta.label}
                 <ArrowRight width={18} height={18} />
               </Button>
-              <Button href={hero.secondaryCta.href} variant="outline" size="lg">
+              <Button href={localePath(locale, hero.secondaryCta.href)} variant="outline" size="lg">
                 {hero.secondaryCta.label}
               </Button>
             </div>
@@ -89,16 +71,9 @@ export function Hero() {
           </Reveal>
         </div>
 
-        {/* Visual */}
         <Reveal delay={160} className="relative">
           <div className="relative">
-            <Placeholder
-              label="Doctor & patient consultation"
-              tone="warm"
-              aspect="aspect-[4/5]"
-              className="animate-float"
-            />
-            {/* Floating accent card */}
+            <Placeholder label={hero.imageLabel} tone="warm" aspect="aspect-[4/5]" className="animate-float" />
             <div className="absolute -bottom-6 -left-6 hidden max-w-[220px] rounded-2xl border border-line bg-white/90 p-5 shadow-card backdrop-blur-sm sm:block">
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gold-soft/50 text-gold">
@@ -106,9 +81,9 @@ export function Hero() {
                 </span>
                 <div>
                   <p className="font-heading text-sm font-semibold text-ink">
-                    Personalized plan
+                    {hero.floatTitle}
                   </p>
-                  <p className="text-xs text-ink-soft">Designed around you</p>
+                  <p className="text-xs text-ink-soft">{hero.floatSub}</p>
                 </div>
               </div>
             </div>

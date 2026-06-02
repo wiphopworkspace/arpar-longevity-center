@@ -1,7 +1,7 @@
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Reveal } from "@/components/ui/Reveal";
 import { Placeholder } from "@/components/ui/Placeholder";
-import { gallery } from "@/data/content";
+import { type Dictionary } from "@/data/content";
 
 /* Varied spans for an editorial, non-uniform grid */
 const spans = [
@@ -22,7 +22,8 @@ const aspects = [
   "aspect-[4/3]",
 ];
 
-export function Gallery() {
+export function Gallery({ dict }: { dict: Dictionary }) {
+  const section = dict.gallerySection;
   return (
     <section
       id="gallery"
@@ -30,15 +31,14 @@ export function Gallery() {
     >
       <div className="container-rail">
         <SectionHeading
-          eyebrow="Clinic Experience"
-          title="A calm, refined space designed for your wellbeing"
-          titleTh="บรรยากาศคลินิกที่สงบ หรูหรา และผ่อนคลาย"
-          description="From the reception lounge to private treatment rooms, every detail is considered for comfort and trust."
+          eyebrow={section.eyebrow}
+          title={section.title}
+          description={section.description}
         />
 
         <Reveal className="mt-14">
           <div className="grid auto-rows-[200px] grid-cols-2 gap-4 sm:auto-rows-[220px] lg:grid-cols-3">
-            {gallery.map((item, i) => (
+            {dict.gallery.map((item, i) => (
               <Placeholder
                 key={item.label}
                 label={item.label}

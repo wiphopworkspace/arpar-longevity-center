@@ -4,9 +4,10 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { BrandMark } from "@/components/ui/BrandMark";
 import { Button } from "@/components/ui/Button";
-import { nav, cta } from "@/data/content";
+import { LanguageSwitcher } from "./LanguageSwitcher";
+import { localePath, type Dictionary, type Locale } from "@/data/content";
 
-export function Header() {
+export function Header({ dict, locale }: { dict: Dictionary; locale: Locale }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -19,7 +20,6 @@ export function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Lock body scroll while the mobile menu is open; restore on close/unmount.
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     return () => {
@@ -27,7 +27,6 @@ export function Header() {
     };
   }, [open]);
 
-  // Close the menu on Escape.
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -36,6 +35,8 @@ export function Header() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, close]);
+
+  const home = localePath(locale, "/");
 
   return (
     <>
@@ -47,16 +48,16 @@ export function Header() {
         }`}
       >
         <div className="container-rail flex h-20 items-center justify-between">
-          <Link href="/" aria-label="ARPAR Longevity Center — home">
+          <Link href={home} aria-label="ARPAR Longevity Center — home">
             <BrandMark />
           </Link>
 
           {/* Desktop nav */}
           <nav className="hidden items-center gap-9 lg:flex" aria-label="Primary">
-            {nav.map((item) => (
+            {dict.nav.map((item) => (
               <Link
                 key={item.href}
-                href={item.href}
+                href={localePath(locale, item.href)}
                 className="relative text-sm font-medium text-ink/80 transition-colors hover:text-gold after:absolute after:-bottom-1.5 after:left-0 after:h-px after:w-0 after:bg-gold after:transition-all after:duration-300 hover:after:w-full"
               >
                 {item.label}
@@ -64,13 +65,14 @@ export function Header() {
             ))}
           </nav>
 
-          <div className="hidden lg:block">
-            <Button href={cta.href} size="md">
-              {cta.label}
+          <div className="hidden items-center gap-4 lg:flex">
+            <LanguageSwitcher locale={locale} />
+            <Button href={localePath(locale, dict.cta.href)} size="md">
+              {dict.cta.label}
             </Button>
           </div>
 
-          {/* Mobile open toggle (hamburger) */}
+          {/* Mobile open toggle */}
           <button
             type="button"
             onClick={() => setOpen(true)}
@@ -89,14 +91,7 @@ export function Header() {
         </div>
       </header>
 
-      {/*
-        Mobile menu overlay.
-        Rendered as a SIBLING of <header> (not a child) so it is never inside
-        the header's `backdrop-filter` — a backdrop-filtered ancestor becomes
-        the containing block for position:fixed and would otherwise clip this
-        overlay to the header box once the page is scrolled. Solid background,
-        true full-screen (inset-0), high z-index, internal scroll.
-      */}
+      {/* Mobile menu overlay (sibling of header → not under backdrop-filter) */}
       <div
         id="mobile-menu"
         aria-hidden={!open}
@@ -105,9 +100,8 @@ export function Header() {
         }`}
       >
         <div className="container-rail flex min-h-dvh flex-col">
-          {/* Overlay top bar: logo + close */}
           <div className="flex h-20 shrink-0 items-center justify-between">
-            <Link href="/" aria-label="ARPAR Longevity Center — home" onClick={close}>
+            <Link href={home} aria-label="ARPAR Longevity Center — home" onClick={close}>
               <BrandMark />
             </Link>
             <button
@@ -117,30 +111,17 @@ export function Header() {
               className="flex h-11 w-11 items-center justify-center rounded-full border border-line bg-white/70 text-ink transition-colors hover:text-gold"
             >
               <span className="sr-only">Close</span>
-              <svg
-                width={20}
-                height={20}
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.6}
-                strokeLinecap="round"
-                aria-hidden="true"
-              >
+              <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" aria-hidden="true">
                 <path d="M6 6l12 12M18 6L6 18" />
               </svg>
             </button>
           </div>
 
-          {/* Nav items */}
-          <nav
-            className="flex flex-1 flex-col gap-1 pb-12 pt-4"
-            aria-label="Mobile"
-          >
-            {nav.map((item, i) => (
+          <nav className="flex flex-1 flex-col gap-1 pb-12 pt-4" aria-label="Mobile">
+            {dict.nav.map((item, i) => (
               <Link
                 key={item.href}
-                href={item.href}
+                href={localePath(locale, item.href)}
                 onClick={close}
                 className="border-b border-line/60 py-4 font-heading text-lg font-medium text-ink transition-colors hover:text-gold"
                 style={{ transitionDelay: open ? `${i * 40}ms` : "0ms" }}
@@ -148,13 +129,19 @@ export function Header() {
                 {item.label}
               </Link>
             ))}
+
+            <div className="mt-6 flex items-center justify-between">
+              <span className="text-sm font-medium text-ink-soft">ภาษา / Language</span>
+              <LanguageSwitcher locale={locale} onNavigate={close} />
+            </div>
+
             <Button
-              href={cta.href}
+              href={localePath(locale, dict.cta.href)}
               size="lg"
-              className="mt-8 w-full"
+              className="mt-6 w-full"
               onClick={close}
             >
-              {cta.label}
+              {dict.cta.label}
             </Button>
           </nav>
         </div>

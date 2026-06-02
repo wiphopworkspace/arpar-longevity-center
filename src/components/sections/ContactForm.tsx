@@ -3,13 +3,15 @@
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/Button";
 import { ArrowRight } from "@/components/ui/icons";
+import { type Dictionary } from "@/data/content";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
 const fieldClass =
   "w-full rounded-xl border border-line bg-white/80 px-4 py-3 text-sm text-ink placeholder:text-ink-soft/60 outline-none transition-colors focus:border-gold focus:ring-2 focus:ring-gold/20";
 
-export function ContactForm() {
+export function ContactForm({ dict }: { dict: Dictionary }) {
+  const f = dict.form;
   const [status, setStatus] = useState<Status>("idle");
   const [feedback, setFeedback] = useState("");
 
@@ -22,9 +24,6 @@ export function ContactForm() {
     setFeedback("");
 
     try {
-      // Posts to the Route Handler at src/app/api/contact/route.ts.
-      // The skeleton validates and returns success; wire up real
-      // delivery there when credentials are available.
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -38,22 +37,15 @@ export function ContactForm() {
 
       if (res.ok && json.ok) {
         setStatus("success");
-        setFeedback(
-          json.message ??
-            "ขอบคุณค่ะ — เราได้รับข้อมูลของคุณแล้ว ทีมงานจะติดต่อกลับโดยเร็วที่สุด",
-        );
+        setFeedback(json.message ?? f.successFallback);
         form.reset();
       } else {
         setStatus("error");
-        setFeedback(
-          json.error ?? "เกิดข้อผิดพลาด กรุณาลองใหม่ หรือติดต่อเราผ่าน LINE/โทรศัพท์",
-        );
+        setFeedback(json.error ?? f.errorFallback);
       }
     } catch {
       setStatus("error");
-      setFeedback(
-        "ไม่สามารถส่งข้อมูลได้ในขณะนี้ กรุณาติดต่อเราผ่าน LINE หรือโทรศัพท์",
-      );
+      setFeedback(f.networkError);
     }
   }
 
@@ -62,85 +54,55 @@ export function ContactForm() {
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-ink">
-            ชื่อ-นามสกุล
+            {f.name}
           </label>
-          <input
-            id="name"
-            name="name"
-            type="text"
-            required
-            autoComplete="name"
-            placeholder="ชื่อของคุณ"
-            className={fieldClass}
-          />
+          <input id="name" name="name" type="text" required autoComplete="name" placeholder={f.namePh} className={fieldClass} />
         </div>
         <div>
           <label htmlFor="phone" className="mb-1.5 block text-sm font-medium text-ink">
-            เบอร์โทรศัพท์
+            {f.phone}
           </label>
-          <input
-            id="phone"
-            name="phone"
-            type="tel"
-            required
-            autoComplete="tel"
-            placeholder="08X-XXX-XXXX"
-            className={fieldClass}
-          />
+          <input id="phone" name="phone" type="tel" required autoComplete="tel" placeholder={f.phonePh} className={fieldClass} />
         </div>
       </div>
 
       <div>
         <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-ink">
-          อีเมล
+          {f.email}
         </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          placeholder="you@example.com"
-          className={fieldClass}
-        />
+        <input id="email" name="email" type="email" autoComplete="email" placeholder={f.emailPh} className={fieldClass} />
       </div>
 
       <div>
         <label htmlFor="interest" className="mb-1.5 block text-sm font-medium text-ink">
-          บริการที่สนใจ
+          {f.interest}
         </label>
         <select id="interest" name="interest" className={fieldClass} defaultValue="">
           <option value="" disabled>
-            เลือกบริการ
+            {f.interestPh}
           </option>
-          <option>Personalized Preventive Checkup</option>
-          <option>IV Drip Formulas</option>
-          <option>Stem Cell &amp; NK Cell</option>
-          <option>Hormone Balance &amp; HRT</option>
-          <option>อื่น ๆ</option>
+          {dict.services.map((s) => (
+            <option key={s.slug}>{s.title}</option>
+          ))}
+          <option>{f.interestOther}</option>
         </select>
       </div>
 
       <div>
         <label htmlFor="message" className="mb-1.5 block text-sm font-medium text-ink">
-          ข้อความ
+          {f.message}
         </label>
-        <textarea
-          id="message"
-          name="message"
-          rows={4}
-          placeholder="เล่าเป้าหมายสุขภาพของคุณให้เราทราบ"
-          className={`${fieldClass} resize-none`}
-        />
+        <textarea id="message" name="message" rows={4} placeholder={f.messagePh} className={`${fieldClass} resize-none`} />
       </div>
 
-      {/* Honeypot — hidden from users, catches bots. */}
+      {/* Honeypot */}
       <div className="hidden" aria-hidden="true">
         <label htmlFor="company">Company</label>
         <input id="company" name="company" type="text" tabIndex={-1} autoComplete="off" />
       </div>
 
       <Button type="submit" size="lg" className="w-full" disabled={status === "submitting"}>
-        {status === "submitting" ? "กำลังส่ง..." : "ส่งข้อมูลเพื่อให้เราติดต่อกลับ"}
+        {status === "submitting" ? f.submitting : f.submit}
         {status !== "submitting" && <ArrowRight width={18} height={18} />}
       </Button>
 
@@ -157,9 +119,7 @@ export function ContactForm() {
         </p>
       )}
 
-      <p className="text-center text-xs text-ink-soft/70">
-        ข้อมูลของคุณจะถูกเก็บเป็นความลับและใช้เพื่อการติดต่อกลับเท่านั้น
-      </p>
+      <p className="text-center text-xs text-ink-soft/70">{f.privacy}</p>
     </form>
   );
 }

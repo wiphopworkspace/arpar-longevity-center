@@ -3,22 +3,24 @@
 import { useCallback, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { bannerSlideshow } from "@/data/content";
+import { localePath, type Dictionary, type Locale } from "@/data/content";
 
-const { slides } = bannerSlideshow;
-const count = slides.length;
-
-/**
- * Simple, compact hero-style banner slideshow.
- * Image-only slides (clickable → service page), small dot pagination,
- * subtle desktop arrows. Brochure images are shown uncropped via
- * `object-contain` inside a soft cream/gold frame.
- */
-export function BannerSlideshow() {
+export function BannerSlideshow({
+  dict,
+  locale,
+}: {
+  dict: Dictionary;
+  locale: Locale;
+}) {
+  const slides = dict.bannerSlides;
+  const count = slides.length;
   const [active, setActive] = useState(0);
   const touchStartX = useRef<number | null>(null);
 
-  const goTo = useCallback((i: number) => setActive(((i % count) + count) % count), []);
+  const goTo = useCallback(
+    (i: number) => setActive(((i % count) + count) % count),
+    [count],
+  );
   const next = useCallback(() => goTo(active + 1), [active, goTo]);
   const prev = useCallback(() => goTo(active - 1), [active, goTo]);
 
@@ -55,14 +57,13 @@ export function BannerSlideshow() {
           onTouchEnd={onTouchEnd}
           className="group relative overflow-hidden rounded-3xl border border-gold/30 bg-cream-200/40 shadow-card focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-4 focus-visible:ring-offset-cream-100"
         >
-          {/* Wide banner frame — image stays fully visible (object-contain) */}
           <div className="relative aspect-[4/3] sm:aspect-[16/9] lg:aspect-[2/1]">
             {slides.map((slide, i) => {
               const isActive = i === active;
               return (
                 <Link
                   key={slide.href}
-                  href={slide.href}
+                  href={localePath(locale, slide.href)}
                   aria-hidden={!isActive}
                   tabIndex={isActive ? undefined : -1}
                   aria-label={`${slide.title} — view service details`}
@@ -83,7 +84,6 @@ export function BannerSlideshow() {
             })}
           </div>
 
-          {/* Subtle arrows — desktop only, over the cream side margins */}
           <button
             type="button"
             onClick={prev}
@@ -101,7 +101,6 @@ export function BannerSlideshow() {
             <Chevron dir="right" />
           </button>
 
-          {/* Dot pagination — small, bottom-center */}
           <div
             role="tablist"
             aria-label="Slides"
@@ -132,17 +131,7 @@ export function BannerSlideshow() {
 
 function Chevron({ dir }: { dir: "left" | "right" }) {
   return (
-    <svg
-      width={20}
-      height={20}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.7}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
+    <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       {dir === "left" ? <path d="M15 6l-6 6 6 6" /> : <path d="M9 6l6 6-6 6" />}
     </svg>
   );

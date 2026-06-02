@@ -1,15 +1,44 @@
 # ARPAR Longevity Center — Website
 
-Premium website for **ARPAR Longevity Center / อาภา**, a medical wellness &
-longevity clinic. Calm, trustworthy, high-end (white · cream · soft gold).
-Currently a landing page plus a multi-page **Services** section, structured to
-keep growing.
+Premium **bilingual (Thai / English)** website for **ARPAR Longevity Center /
+อาภา**, a medical wellness & longevity clinic. Calm, trustworthy, high-end
+(white · cream · soft gold). A landing page plus a multi-page **Services**
+section, localized under `/th` and `/en`.
 
 ## Tech stack
 
 - **Next.js 14** (App Router) + **TypeScript**
 - **Tailwind CSS** (custom luxury-wellness theme)
 - `next/font` — Montserrat (headings) · Inter (body) · Noto Sans Thai
+- Lightweight built-in i18n (no extra dependency) — see "Languages" below
+
+## Languages (i18n)
+
+- **Supported locales:** `th` (Thai, **default**) and `en` (English).
+- **URL structure** — every page is under a locale segment:
+  - `/th`, `/en` (home)
+  - `/th/services`, `/en/services`
+  - `/th/services/<slug>`, `/en/services/<slug>`
+- **Root & legacy redirects** (`src/middleware.ts`): `/` → `/th`,
+  `/services` → `/th/services`, `/services/<slug>` → `/th/services/<slug>`.
+- **Language switcher** (header, desktop + mobile) swaps only the locale prefix,
+  preserving the current page (`/th/services/iv-drip` ↔ `/en/services/iv-drip`).
+- **SEO:** per-locale `title`/`description`, `<html lang>`, canonical, and
+  `hreflang` alternates (`th`, `en`, `x-default`). Sitemap includes both locales.
+
+### How bilingual content works
+
+`src/data/content.ts` is the single source of truth. Each translatable string is
+authored once with the `L(thai, english)` helper, e.g.:
+
+```ts
+title: L("ตรวจสุขภาพเชิงป้องกันเฉพาะบุคคล", "Personalized Preventive Checkup"),
+```
+
+`getDictionary(locale)` deep-resolves the bilingual `source` tree into a plain,
+fully-typed dictionary for one language. Pages do
+`const dict = getDictionary(locale)` and pass `{ dict, locale }` to components.
+Build locale-aware links with `localePath(locale, "/services")`.
 
 ## Getting started
 
@@ -30,29 +59,30 @@ excluded via `.eslintignore`.
 
 ```
 src/
+  middleware.ts             # locale redirect (/ → /th, legacy paths → /th/...)
   app/
-    layout.tsx              # fonts + global SEO metadata (from content.ts)
-    page.tsx                # landing page (sections + JSON-LD)
     globals.css             # design tokens + base styles + utilities
-    sitemap.ts              # SEO sitemap (/, /services, /services/[slug])
+    sitemap.ts              # SEO sitemap (th + en: /, /services, /services/[slug])
     robots.ts               # SEO robots
-    services/
-      page.tsx              # /services index (card grid)
-      [slug]/page.tsx       # /services/<slug> detail (static-generated)
-    api/
-      contact/route.ts      # contact form Route Handler (safe skeleton)
+    api/contact/route.ts    # contact form Route Handler (safe skeleton)
+    [locale]/
+      layout.tsx            # <html lang>, fonts, per-locale SEO + hreflang
+      page.tsx              # localized landing page (sections + JSON-LD)
+      services/
+        page.tsx            # /<locale>/services index (card grid)
+        [slug]/page.tsx     # /<locale>/services/<slug> detail (SSG)
   components/
-    layout/                 Header (sticky + mobile menu), Footer
-    sections/               Hero, BrandPromise, About, Services,
+    layout/                 Header (+ mobile menu), Footer, LanguageSwitcher
+    sections/               Hero, BannerSlideshow, BrandPromise, About, Services,
                             FeaturedPrograms, WhyChoose, Doctors, Gallery,
                             Articles, Contact, ContactForm
     services/               ServiceCard
     ui/                     Button, SectionHeading, Reveal, BrandMark,
-                            Placeholder, PageHero, CtaBand, icons
+                            Placeholder, PageHero, CtaBand, BrochureImage, icons
   data/
-    content.ts              # ALL editable copy & data — single source of truth
+    content.ts              # ALL editable copy & data (TH+EN) — single source
 public/
-  images/                   real images (e.g. arpar-brand-hero.jpg)
+  images/                   real images (brand, about, services brochures)
 ```
 
 ## Design system
@@ -73,46 +103,68 @@ subtle sparkle/wave decorations.
 
 ---
 
-## Editing content
+## Editing content (Thai + English)
 
-**Everything editable lives in `src/data/content.ts`.** Change text there and the
-whole site updates. Key exports: `site`, `cta`, `seo`, `siteUrl`, `nav`, `hero`,
-`brandPromise`, `about`, `services`, `programs`, `reasons`, `doctors`, `gallery`,
-`articles`, `contact`.
+**Everything editable lives in `src/data/content.ts`.** Translatable text is
+authored once with `L(thai, english)`; structural fields (slug, icon, image src,
+href) are language-independent. Edit the Thai/English strings inside the `L(...)`
+calls and the whole site updates in both languages.
 
 ### Update business / contact information
 
 Edit the `site` object in `content.ts` (`phone`, `phoneHref`, `lineId`,
-`lineHref`, `facebook`, `email`, `address`, `hours`) and `siteUrl` (production
-domain). These feed the Header, Footer, Contact section, sitemap, robots, and
-metadata. Items still set to samples are commented `// PLACEHOLDER`.
+`lineHref`, `facebook`, `email`) and `siteUrl` (production domain). `address` and
+`hours` are bilingual (`L(...)`). These feed the Header, Footer, Contact section,
+sitemap, robots, and metadata. Items still set to samples are commented
+`// PLACEHOLDER`.
 
-### Add a new service
+### Add a new service (both languages)
 
-Append an object to the `services` array in `content.ts`:
+Append an object to `source.services` in `content.ts` — note each text field is
+bilingual via `L(...)`:
 
 ```ts
 {
-  slug: "my-new-service",      // becomes /services/my-new-service
-  icon: "leaf",                // an IconName from components/ui/icons.tsx
-  tone: "warm",                // "warm" | "cool" | "gold" (placeholder art)
-  title: "My New Service",
-  titleTh: "บริการใหม่",
-  description: "One-line summary used on cards.",
-  benefits: ["Benefit one", "Benefit two", "Benefit three"],
-  overview: "Detail-page overview paragraph.",
-  whoFor: ["Who it's for line 1", "line 2"],
-  whatToExpect: ["Step 1", "Step 2", "Step 3"],
+  slug: "my-new-service",            // becomes /<locale>/services/my-new-service
+  icon: "leaf" as IconName,          // from components/ui/icons.tsx
+  tone: "warm" as Tone,              // "warm" | "cool" | "gold" (placeholder art)
+  image: { src: "/images/services/x.webp", alt: L("ไทย", "English"), width: 1280, height: 905 },
+  title: L("บริการใหม่", "My New Service"),
+  description: L("สรุปสั้น ๆ", "One-line summary used on cards."),
+  benefits: L(["ข้อดี 1", "ข้อดี 2"], ["Benefit one", "Benefit two"]),
+  overview: L("ย่อหน้าอธิบาย", "Detail-page overview paragraph."),
+  whoFor: L(["เหมาะกับ…"], ["Who it's for…"]),
+  whatToExpect: L(["ขั้นตอน 1"], ["Step 1"]),
 }
 ```
 
-The card grid, the dynamic detail page, the sitemap, and static generation all
-pick it up automatically. No new files needed.
+Both `/th/...` and `/en/...` card grids, detail pages, sitemap, and static
+generation pick it up automatically. No new files needed.
 
-### Add a new article
+### Add a new article (both languages)
 
-Append to the `articles` array in `content.ts` (`category`, `title`, `excerpt`,
-`readingTime`). _(Article detail pages are a future step — see Phase 3.)_
+Append to `source.articles` in `content.ts` with bilingual fields:
+`category: L(...)`, `title: L(...)`, `excerpt: L(...)`, `readingTime: L(...)`.
+_(Article detail pages are a future step — see Phase 3.)_
+
+### Add a new localized page
+
+Create it under `src/app/[locale]/your-page/page.tsx`, read the locale from
+`params.locale`, call `getDictionary(locale)`, and render `Header`/`Footer` with
+`{ dict, locale }`. Build internal links with `localePath(locale, "/your-page")`.
+
+### Testing localized routes
+
+```bash
+npm run dev
+# then visit:
+#   http://localhost:3000/            → redirects to /th
+#   http://localhost:3000/th , /en
+#   http://localhost:3000/th/services , /en/services
+#   http://localhost:3000/th/services/iv-drip , /en/services/iv-drip
+#   http://localhost:3000/services    → redirects to /th/services
+# Use the TH/EN switcher in the header to confirm context is preserved.
+```
 
 ---
 

@@ -1,15 +1,22 @@
+import Link from "next/link";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Reveal } from "@/components/ui/Reveal";
 import { Placeholder } from "@/components/ui/Placeholder";
 import { Button } from "@/components/ui/Button";
 import { ArrowRight } from "@/components/ui/icons";
-import { articles } from "@/data/content";
+import { localePath, type Dictionary, type Locale } from "@/data/content";
 
 const tones = ["warm", "cool", "gold"] as const;
 
-export function Articles() {
-  // Feature the first article, list the rest
-  const [featured, ...rest] = articles;
+export function Articles({
+  dict,
+  locale,
+}: {
+  dict: Dictionary;
+  locale: Locale;
+}) {
+  const [featured, ...rest] = dict.articles;
+  const allHref = localePath(locale, "/#articles");
 
   return (
     <section id="articles" className="scroll-mt-24 py-20 lg:py-28">
@@ -17,20 +24,18 @@ export function Articles() {
         <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
           <SectionHeading
             align="left"
-            eyebrow="Articles / Knowledge"
-            title="Understanding longevity, one read at a time"
-            titleTh="สาระความรู้เพื่อสุขภาพที่ยืนยาว"
+            eyebrow={dict.articlesSection.eyebrow}
+            title={dict.articlesSection.title}
           />
           <Reveal>
-            <Button href="#articles" variant="ghost">
-              ดูบทความทั้งหมด
+            <Button href={allHref} variant="ghost">
+              {dict.ui.readAll}
               <ArrowRight width={16} height={16} />
             </Button>
           </Reveal>
         </div>
 
         <div className="mt-12 grid gap-7 lg:grid-cols-2">
-          {/* Featured */}
           <Reveal>
             <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-line/80 bg-white/80 shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-card">
               <Placeholder
@@ -50,18 +55,17 @@ export function Articles() {
                 <p className="mt-3 flex-1 text-base leading-relaxed text-ink-soft">
                   {featured.excerpt}
                 </p>
-                <a
-                  href="#articles"
+                <Link
+                  href={allHref}
                   className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-gold transition-all hover:gap-2.5"
                 >
-                  อ่านต่อ
+                  {dict.ui.readMore}
                   <ArrowRight width={16} height={16} />
-                </a>
+                </Link>
               </div>
             </article>
           </Reveal>
 
-          {/* List */}
           <div className="flex flex-col gap-5">
             {rest.map((article, i) => (
               <Reveal key={article.title} delay={i * 70}>
