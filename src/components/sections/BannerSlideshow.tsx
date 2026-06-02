@@ -5,6 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { localePath, type Dictionary, type Locale } from "@/data/content";
 
+/** Horizontal distance (px) before a drag counts as a slide change. */
+const DRAG_THRESHOLD = 45;
+
 export function BannerSlideshow({
   dict,
   locale,
@@ -15,7 +18,11 @@ export function BannerSlideshow({
   const slides = dict.bannerSlides;
   const count = slides.length;
   const [active, setActive] = useState(0);
-  const touchStartX = useRef<number | null>(null);
+  const [grabbing, setGrabbing] = useState(false);
+
+  // Drag tracking (refs — no re-render on move).
+  const startX = useRef<number | null>(null);
+  const suppressClick = useRef(false);
 
   const goTo = useCallback(
     (i: number) => setActive(((i % count) + count) % count),
@@ -34,29 +41,74 @@ export function BannerSlideshow({
     }
   };
 
-  const onTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
+  /* ---- Pointer drag / swipe (mouse + touch, unified) ---- */
+  const onPointerDown = (e: React.PointerEvent) => {
+    if (!e.isPrimary) return;
+    startX.current = e.clientX;
+    setGrabbing(true);
+    // Keep receiving move/up even if the pointer leaves the banner.
+    try {
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {
+      /* setPointerCapture can throw if the pointer is already released */
+    }
   };
-  const onTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartX.current === null) return;
-    const dx = e.changedTouches[0].clientX - touchStartX.current;
-    if (Math.abs(dx) > 45) (dx < 0 ? next : prev)();
-    touchStartX.current = null;
+
+  const endDrag = (e: React.PointerEvent) => {
+    if (startX.current === null) {
+      setGrabbing(false);
+      return;
+    }
+    const dx = e.clientX - startX.current;
+    startX.current = null;
+    setGrabbing(false);
+    try {
+      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+    } catch {
+      /* no-op */
+    }
+    if (Math.abs(dx) > DRAG_THRESHOLD) {
+      // A real drag occurred → change slide and suppress the click that
+      // the browser fires next, so the slide's Link doesn't navigate.
+      suppressClick.current = true;
+      if (dx < 0) next();
+      else prev();
+    }
+  };
+
+  const onPointerCancel = () => {
+    // Drag aborted (e.g. vertical scroll took over) — reset, do not navigate.
+    startX.current = null;
+    setGrabbing(false);
+  };
+
+  // Runs in capture phase, before the slide Link's click — cancels navigation
+  // only when the click was the tail end of a drag.
+  const onClickCapture = (e: React.MouseEvent) => {
+    if (suppressClick.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      suppressClick.current = false;
+    }
   };
 
   return (
     <section className="bg-cream-100 pt-24 pb-5 sm:pt-28 sm:pb-6">
       <div className="mx-auto w-full max-w-4xl px-4 sm:px-6">
-        {/* Clean banner — no card frame; natural brochure ratio (no crop, no letterbox) */}
+        {/* Clean banner — drag/swipe enabled; natural brochure ratio (no crop) */}
         <div
           role="region"
           aria-roledescription="carousel"
           aria-label="ARPAR wellness programs"
           tabIndex={0}
           onKeyDown={onKeyDown}
-          onTouchStart={onTouchStart}
-          onTouchEnd={onTouchEnd}
-          className="relative overflow-hidden rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-4 focus-visible:ring-offset-cream-100"
+          onPointerDown={onPointerDown}
+          onPointerUp={endDrag}
+          onPointerCancel={onPointerCancel}
+          onClickCapture={onClickCapture}
+          className={`relative touch-pan-y select-none overflow-hidden rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-4 focus-visible:ring-offset-cream-100 ${
+            grabbing ? "cursor-grabbing" : "cursor-grab"
+          }`}
         >
           <div className="relative aspect-[1280/905]">
             {slides.map((slide, i) => {
@@ -65,6 +117,7 @@ export function BannerSlideshow({
                 <Link
                   key={slide.href}
                   href={localePath(locale, slide.href)}
+                  draggable={false}
                   aria-hidden={!isActive}
                   tabIndex={isActive ? undefined : -1}
                   aria-label={`${slide.title} — view service details`}
@@ -76,6 +129,7 @@ export function BannerSlideshow({
                     src={slide.image.src}
                     alt={slide.image.alt}
                     fill
+                    draggable={false}
                     sizes="(max-width: 896px) 100vw, 896px"
                     priority={i === 0}
                     className="object-contain"
@@ -86,7 +140,7 @@ export function BannerSlideshow({
           </div>
         </div>
 
-        {/* Dot pagination — just below the image, no added frame height */}
+        {/* Dot pagination — just below the image */}
         <div
           role="tablist"
           aria-label="Slides"
