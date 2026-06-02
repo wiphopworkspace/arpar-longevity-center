@@ -118,25 +118,18 @@ export const servicesOverview: SiteImage = {
   height: 905,
 };
 
-export type CarouselSlide = {
+export type BannerSlide = {
+  /** Used only for the slide link's accessible label (not rendered as text). */
   title: string;
-  description: string;
   image: SiteImage;
   href: string;
 };
 
-/** Top-of-homepage program carousel (brochure visuals → service pages). */
-export const galleryCarousel = {
-  eyebrow: "Wellness Programs",
-  title: "Explore ARPAR Wellness Programs",
-  description:
-    "A closer look at our signature programs — browse through and open any visual to explore the full service.",
-  cta: "ดูรายละเอียดบริการ",
+/** Top-of-homepage banner slideshow — image-only slides → service pages. */
+export const bannerSlideshow: { slides: BannerSlide[] } = {
   slides: [
     {
       title: "Hormone Balance & HRT",
-      description:
-        "Personalized, medically supervised hormone and weight-management care designed to support everyday wellbeing.",
       image: {
         src: "/images/services/hormone-hrt-weight-management.webp",
         alt: "ARPAR hormone balance, HRT and weight management program brochure",
@@ -147,8 +140,6 @@ export const galleryCarousel = {
     },
     {
       title: "IV Drip & Micronutrients",
-      description:
-        "Curated IV drip formulas and micronutrient-guided supplementation to support hydration, energy, and recovery.",
       image: {
         src: "/images/services/micronutrients-iv-drip.webp",
         alt: "ARPAR micronutrients, personalized supplements and IV drip formulas brochure",
@@ -159,8 +150,6 @@ export const galleryCarousel = {
     },
     {
       title: "Stem Cell & Preventive Checkup",
-      description:
-        "Regenerative cellular wellness and tailored preventive screening, planned and supervised by our medical team.",
       image: {
         src: "/images/services/stem-cell-preventive-checkup.webp",
         alt: "ARPAR stem cell, NK cell and personalized preventive checkup brochure",
@@ -169,7 +158,7 @@ export const galleryCarousel = {
       },
       href: "/services/stem-cell-nk-cell",
     },
-  ] satisfies CarouselSlide[],
+  ],
 };
 
 export const about = {
