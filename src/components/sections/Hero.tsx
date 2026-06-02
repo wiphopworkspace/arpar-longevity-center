@@ -9,7 +9,7 @@ export function Hero({ dict, locale }: { dict: Dictionary; locale: Locale }) {
   return (
     <section
       id="top"
-      className="relative overflow-hidden bg-cream-radial pt-32 pb-20 sm:pt-36 lg:pt-40 lg:pb-28"
+      className="relative overflow-hidden bg-cream-radial pt-10 pb-20 sm:pt-12 lg:pt-16 lg:pb-28"
     >
       <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-gold-soft/30 blur-3xl" />
       <div aria-hidden="true" className="pointer-events-none absolute -left-32 top-40 h-96 w-96 rounded-full bg-gold-soft/20 blur-3xl" />
