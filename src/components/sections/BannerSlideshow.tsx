@@ -18,9 +18,10 @@ export function BannerSlideshow({
   const slides = dict.bannerSlides;
   const count = slides.length;
   const [active, setActive] = useState(0);
-  const [grabbing, setGrabbing] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  // Live horizontal offset (px) the track follows while dragging.
+  const [dragOffset, setDragOffset] = useState(0);
 
-  // Drag tracking (refs — no re-render on move).
   const startX = useRef<number | null>(null);
   const suppressClick = useRef(false);
 
@@ -41,11 +42,12 @@ export function BannerSlideshow({
     }
   };
 
-  /* ---- Pointer drag / swipe (mouse + touch, unified) ---- */
+  /* ---- Pointer drag / swipe (mouse + touch, unified, live-following) ---- */
   const onPointerDown = (e: React.PointerEvent) => {
     if (!e.isPrimary) return;
     startX.current = e.clientX;
-    setGrabbing(true);
+    setDragging(true);
+    setDragOffset(0);
     try {
       (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     } catch {
@@ -53,19 +55,28 @@ export function BannerSlideshow({
     }
   };
 
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (startX.current === null) return;
+    // Track follows the pointer in real time.
+    setDragOffset(e.clientX - startX.current);
+  };
+
   const endDrag = (e: React.PointerEvent) => {
     if (startX.current === null) {
-      setGrabbing(false);
+      setDragging(false);
+      setDragOffset(0);
       return;
     }
     const dx = e.clientX - startX.current;
     startX.current = null;
-    setGrabbing(false);
     try {
       (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
     } catch {
       /* no-op */
     }
+    // Re-enable the transition and snap to the resolved slide.
+    setDragging(false);
+    setDragOffset(0);
     if (Math.abs(dx) > DRAG_THRESHOLD) {
       // A real drag occurred → change slide and suppress the click that the
       // browser fires next, so the slide's Link doesn't navigate.
@@ -77,7 +88,8 @@ export function BannerSlideshow({
 
   const onPointerCancel = () => {
     startX.current = null;
-    setGrabbing(false);
+    setDragging(false);
+    setDragOffset(0);
   };
 
   // Capture phase, before the slide Link's click — cancels navigation only when
@@ -93,7 +105,7 @@ export function BannerSlideshow({
   return (
     <section className="bg-cream-100 pt-24 pb-5 sm:pt-28 sm:pb-6">
       <div className="mx-auto w-full max-w-4xl px-4 sm:px-6">
-        {/* Clean banner — horizontal slide transition; natural brochure ratio (no crop) */}
+        {/* Clean banner — horizontal slide that follows the drag; natural ratio (no crop) */}
         <div
           role="region"
           aria-roledescription="carousel"
@@ -101,17 +113,24 @@ export function BannerSlideshow({
           tabIndex={0}
           onKeyDown={onKeyDown}
           onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
           onPointerUp={endDrag}
           onPointerCancel={onPointerCancel}
           onClickCapture={onClickCapture}
           className={`relative aspect-[1280/905] touch-pan-y select-none overflow-hidden rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-4 focus-visible:ring-offset-cream-100 ${
-            grabbing ? "cursor-grabbing" : "cursor-grab"
+            dragging ? "cursor-grabbing" : "cursor-grab"
           }`}
         >
-          {/* Track: a flex row of full-width slides moved by translateX */}
+          {/* Track: flex row of full-width slides, moved by translateX (active + live drag) */}
           <div
-            className="flex h-full transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
-            style={{ transform: `translateX(-${active * 100}%)` }}
+            className={`flex h-full ${
+              dragging
+                ? ""
+                : "transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
+            }`}
+            style={{
+              transform: `translateX(calc(${-active * 100}% + ${dragOffset}px))`,
+            }}
           >
             {slides.map((slide, i) => {
               const isActive = i === active;
