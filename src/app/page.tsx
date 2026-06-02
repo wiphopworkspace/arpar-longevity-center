@@ -1,5 +1,6 @@
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { GalleryCarousel } from "@/components/sections/GalleryCarousel";
 import { Hero } from "@/components/sections/Hero";
 import { BrandPromise } from "@/components/sections/BrandPromise";
 import { About } from "@/components/sections/About";
@@ -42,6 +43,7 @@ export default function HomePage() {
       />
       <Header />
       <main>
+        <GalleryCarousel />
         <Hero />
         <BrandPromise />
         <About />

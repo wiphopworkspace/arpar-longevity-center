@@ -118,6 +118,60 @@ export const servicesOverview: SiteImage = {
   height: 905,
 };
 
+export type CarouselSlide = {
+  title: string;
+  description: string;
+  image: SiteImage;
+  href: string;
+};
+
+/** Top-of-homepage program carousel (brochure visuals → service pages). */
+export const galleryCarousel = {
+  eyebrow: "Wellness Programs",
+  title: "Explore ARPAR Wellness Programs",
+  description:
+    "A closer look at our signature programs — browse through and open any visual to explore the full service.",
+  cta: "ดูรายละเอียดบริการ",
+  slides: [
+    {
+      title: "Hormone Balance & HRT",
+      description:
+        "Personalized, medically supervised hormone and weight-management care designed to support everyday wellbeing.",
+      image: {
+        src: "/images/services/hormone-hrt-weight-management.webp",
+        alt: "ARPAR hormone balance, HRT and weight management program brochure",
+        width: 1280,
+        height: 905,
+      },
+      href: "/services/hormone-balance-hrt",
+    },
+    {
+      title: "IV Drip & Micronutrients",
+      description:
+        "Curated IV drip formulas and micronutrient-guided supplementation to support hydration, energy, and recovery.",
+      image: {
+        src: "/images/services/micronutrients-iv-drip.webp",
+        alt: "ARPAR micronutrients, personalized supplements and IV drip formulas brochure",
+        width: 1280,
+        height: 905,
+      },
+      href: "/services/iv-drip",
+    },
+    {
+      title: "Stem Cell & Preventive Checkup",
+      description:
+        "Regenerative cellular wellness and tailored preventive screening, planned and supervised by our medical team.",
+      image: {
+        src: "/images/services/stem-cell-preventive-checkup.webp",
+        alt: "ARPAR stem cell, NK cell and personalized preventive checkup brochure",
+        width: 1280,
+        height: 905,
+      },
+      href: "/services/stem-cell-nk-cell",
+    },
+  ] satisfies CarouselSlide[],
+};
+
 export const about = {
   eyebrow: "About ARPAR",
   title: "A holistic center for longevity and lasting vitality",
