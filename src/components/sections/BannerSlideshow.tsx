@@ -46,7 +46,6 @@ export function BannerSlideshow({
     if (!e.isPrimary) return;
     startX.current = e.clientX;
     setGrabbing(true);
-    // Keep receiving move/up even if the pointer leaves the banner.
     try {
       (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     } catch {
@@ -68,8 +67,8 @@ export function BannerSlideshow({
       /* no-op */
     }
     if (Math.abs(dx) > DRAG_THRESHOLD) {
-      // A real drag occurred → change slide and suppress the click that
-      // the browser fires next, so the slide's Link doesn't navigate.
+      // A real drag occurred → change slide and suppress the click that the
+      // browser fires next, so the slide's Link doesn't navigate.
       suppressClick.current = true;
       if (dx < 0) next();
       else prev();
@@ -77,13 +76,12 @@ export function BannerSlideshow({
   };
 
   const onPointerCancel = () => {
-    // Drag aborted (e.g. vertical scroll took over) — reset, do not navigate.
     startX.current = null;
     setGrabbing(false);
   };
 
-  // Runs in capture phase, before the slide Link's click — cancels navigation
-  // only when the click was the tail end of a drag.
+  // Capture phase, before the slide Link's click — cancels navigation only when
+  // the click was the tail end of a drag.
   const onClickCapture = (e: React.MouseEvent) => {
     if (suppressClick.current) {
       e.preventDefault();
@@ -95,7 +93,7 @@ export function BannerSlideshow({
   return (
     <section className="bg-cream-100 pt-24 pb-5 sm:pt-28 sm:pb-6">
       <div className="mx-auto w-full max-w-4xl px-4 sm:px-6">
-        {/* Clean banner — drag/swipe enabled; natural brochure ratio (no crop) */}
+        {/* Clean banner — horizontal slide transition; natural brochure ratio (no crop) */}
         <div
           role="region"
           aria-roledescription="carousel"
@@ -106,11 +104,15 @@ export function BannerSlideshow({
           onPointerUp={endDrag}
           onPointerCancel={onPointerCancel}
           onClickCapture={onClickCapture}
-          className={`relative touch-pan-y select-none overflow-hidden rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-4 focus-visible:ring-offset-cream-100 ${
+          className={`relative aspect-[1280/905] touch-pan-y select-none overflow-hidden rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-4 focus-visible:ring-offset-cream-100 ${
             grabbing ? "cursor-grabbing" : "cursor-grab"
           }`}
         >
-          <div className="relative aspect-[1280/905]">
+          {/* Track: a flex row of full-width slides moved by translateX */}
+          <div
+            className="flex h-full transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
+            style={{ transform: `translateX(-${active * 100}%)` }}
+          >
             {slides.map((slide, i) => {
               const isActive = i === active;
               return (
@@ -121,8 +123,8 @@ export function BannerSlideshow({
                   aria-hidden={!isActive}
                   tabIndex={isActive ? undefined : -1}
                   aria-label={`${slide.title} — view service details`}
-                  className={`absolute inset-0 transition-opacity duration-700 ease-out ${
-                    isActive ? "opacity-100" : "pointer-events-none opacity-0"
+                  className={`relative flex-[0_0_100%] ${
+                    isActive ? "" : "pointer-events-none"
                   }`}
                 >
                   <Image
